@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ resource.name }} – Makerspace Booking{% endblock %}
+
+{% block style %}
+main { max-width: 800px; }
+.resource-info {
+  background: var(--brand-light);
+  border: 1px solid var(--brand-muted);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.75rem;
+  display: flex;
+  gap: 1.1rem;
+  align-items: flex-start;
+}
+.resource-info img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+.resource-info-body { flex: 1; }
+.resource-info-name { font-size: 1.1rem; font-weight: 700; color: var(--text-1); font-family: 'Space Grotesk', sans-serif; margin-bottom: .3rem; }
+.resource-info-meta { font-size: .83rem; color: var(--text-2); display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin-bottom: .4rem; }
+.resource-info-avail { font-size: .82rem; color: var(--text-2); }
+{% endblock %}
+
+{% block content %}
+<h1>{% if is_book %}Check Out Book{% else %}Book Resource{% endif %}</h1>
+
+<div class="resource-info">
+  <img src="{{ url_for('static', filename='uploads/resources/' + resource.thumbnail) if resource.thumbnail else url_for('static', filename='images/resource_placeholder.svg') }}"
+       alt="{{ resource.name }}">
+  <div class="resource-info-body">
+    <div class="resource-info-name">{{ resource.name }}</div>
+    <div class="resource-info-meta">
+      <span class="category-badge" data-cat="{{ resource.category.value }}">
+        {{ resource.category.value.replace('_', ' ').title() }}
+      </span>
+      {% if resource.location %}<span>📍 {{ resource.location }}</span>{% endif %}
+      {% if resource.capacity %}<span>Capacity: {{ resource.capacity }}</span>{% endif %}
+    </div>
+    {% if resource.description %}
+      <p style="font-size:.875rem;color:var(--text-2);margin-bottom:.4rem">{{ resource.description }}</p>
+    {% endif %}
+    <div class="resource-info-avail">
+      <strong>Weekdays:</strong> {{ resource.weekday_start.strftime('%H:%M') }}–{{ resource.weekday_end.strftime('%H:%M') }}
+      {% if resource.weekend_start %}
+        &nbsp;&nbsp;<strong>Weekends:</strong> {{ resource.weekend_start.strftime('%H:%M') }}–{{ resource.weekend_end.strftime('%H:%M') }}
+      {% else %}
+        &nbsp;&nbsp;<span style="color:var(--text-3)">No weekend bookings</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="form-section">
+  <h2>Schedule</h2>
+  <form method="post">
+    {% if is_book %}
+      <div class="row-2">
+        <div>
+          <label for="checkout_date">Checkout date</label>
+          <input type="date" id="checkout_date" name="checkout_date"
+                 value="{{ form.get('checkout_date', '') }}" required>
+        </div>
+        <div>
+          <label for="return_date">Return date</label>
+          <input type="date" id="return_date" name="return_date"
+                 value="{{ form.get('return_date', '') }}" required>
+        </div>
+      </div>
+    {% else %}
+      <div class="row-2">
+        <div>
+          <label for="start_datetime">Start</label>
+          <input type="datetime-local" id="start_datetime" name="start_datetime"
+                 value="{{ form.get('start_datetime', '') }}" required>
+        </div>
+        <div>
+          <label for="end_datetime">End</label>
+          <input type="datetime-local" id="end_datetime" name="end_datetime"
+                 value="{{ form.get('end_datetime', '') }}" required>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if holiday_acknowledged %}
+      <input type="hidden" name="holiday_acknowledged" value="1">
+    {% endif %}
+    <button type="submit">{% if is_book %}Confirm Checkout{% else %}Book Resource{% endif %}</button>
+  </form>
+</div>
+
+<a class="new-booking-link" href="{{ url_for('member.home') }}">← Back to resources</a>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "super_admin/base.html" %}
+
+{% block title %}Tenant Stats — Super Admin{% endblock %}
+
+{% block style %}
+.stats-table { width: 100%; border-collapse: collapse; }
+.stats-table th, .stats-table td { padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border); text-align: left; }
+.stats-table th { background: var(--surface-alt); font-weight: 600; font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); font-family: 'Space Grotesk', sans-serif; }
+.stats-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stats-table tfoot td { font-weight: 700; background: var(--surface-alt); border-top: 2px solid var(--border); }
+{% endblock %}
+
+{% block content %}
+<h1>Tenant Stats</h1>
+
+<div class="filter-pills" style="margin-bottom:1.75rem">
+  <a href="{{ url_for('super_admin.stats', period='today') }}"
+     class="filter-pill {% if period == 'today' %}active{% endif %}">Today</a>
+  <a href="{{ url_for('super_admin.stats', period='week') }}"
+     class="filter-pill {% if period == 'week' %}active{% endif %}">Last 7 days</a>
+  <a href="{{ url_for('super_admin.stats', period='month') }}"
+     class="filter-pill {% if period == 'month' %}active{% endif %}">Last 30 days</a>
+  <a href="{{ url_for('super_admin.stats', period='all') }}"
+     class="filter-pill {% if period == 'all' %}active{% endif %}">All time</a>
+</div>
+
+{% if rows %}
+
+<div class="stat-cards">
+  <div class="stat-card">
+    <div class="stat-value">{{ rows|length }}</div>
+    <div class="stat-label">Active Tenants</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ rows|sum(attribute='member_count') }}</div>
+    <div class="stat-label">Total Members</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ rows|sum(attribute='resource_count') }}</div>
+    <div class="stat-label">Total Resources</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ rows|sum(attribute='future_bookings') }}</div>
+    <div class="stat-label">Future Bookings</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ rows|sum(attribute='completed_bookings') }}</div>
+    <div class="stat-label">Completed</div>
+  </div>
+</div>
+
+<div class="table-wrapper">
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Tenant</th>
+        <th class="num">Admins</th>
+        <th class="num">Members</th>
+        <th class="num">Suspended</th>
+        <th class="num">Resources</th>
+        <th class="num">Future Bookings</th>
+        <th class="num">Completed</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in rows %}
+     <tr>
+       <td><strong>{{ row.Tenant.name }}</strong></td>
+       <td class="num">{{ row.admin_count }}</td>
+       <td class="num">{{ row.member_count }}</td>
+       <td class="num">{{ row.suspended_count }}</td>
+       <td class="num">{{ row.resource_count }}</td>
+       <td class="num">{{ row.future_bookings }}</td>
+       <td class="num">{{ row.completed_bookings }}</td>
+     </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+     <tr>
+       <td>Total</td>
+       <td class="num">{{ rows | sum(attribute='admin_count') }}</td>
+       <td class="num">{{ rows | sum(attribute='member_count') }}</td>
+       <td class="num">{{ rows | sum(attribute='suspended_count') }}</td>
+       <td class="num">{{ rows | sum(attribute='resource_count') }}</td>
+       <td class="num">{{ rows | sum(attribute='future_bookings') }}</td>
+       <td class="num">{{ rows | sum(attribute='completed_bookings') }}</td>
+     </tr>
+    </tfoot>
+  </table>
+</div>
+
+{% else %}
+  <p class="empty">No tenants yet.</p>
+{% endif %}
+{% endblock %}

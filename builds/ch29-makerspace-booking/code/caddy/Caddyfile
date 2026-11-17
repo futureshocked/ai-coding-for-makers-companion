@@ -1,0 +1,75 @@
+{
+	email admin@makerbooking.com
+}
+
+# Apex: landing page, /register/org, /auth/reset-password/*
+makerbooking.com, www.makerbooking.com {
+	encode zstd gzip
+
+	reverse_proxy app:8000 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Super-admin host
+app.makerbooking.com {
+	encode zstd gzip
+
+	reverse_proxy app:8000 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Wildcard: all tenant subdomains — wildcard cert via Cloudflare DNS-01
+# Requires Caddy built with github.com/caddy-dns/cloudflare module (xcaddy).
+# Set CLOUDFLARE_API_TOKEN in the deployment environment.
+*.makerbooking.com {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+
+	encode zstd gzip
+
+	reverse_proxy app:8000 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}My Profile – Makerspace Booking{% endblock %}
+
+{% block style %}
+main { max-width: 600px; }
+{% endblock %}
+
+{% block content %}
+<h1>My Profile</h1>
+
+<form method="post" action="{{ url_for('member.profile') }}">
+
+  <div class="form-section">
+    <h2>Account Info</h2>
+
+    <label for="display_name">Display Name</label>
+    <input type="text" id="display_name" name="display_name"
+           value="{{ form.display_name }}" required>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" name="email"
+           value="{{ form.email }}" required>
+  </div>
+
+  <div class="form-section">
+    <h2>Change Password</h2>
+    <p class="field-hint" style="margin-bottom:.75rem">Leave blank to keep your current password.</p>
+
+    <label for="current_password">Current Password</label>
+    <input type="password" id="current_password" name="current_password"
+           autocomplete="current-password">
+
+    <div class="row-2">
+      <div>
+        <label for="new_password">New Password</label>
+        <input type="password" id="new_password" name="new_password"
+               autocomplete="new-password" minlength="10">
+      </div>
+      <div>
+        <label for="confirm_password">Confirm New Password</label>
+        <input type="password" id="confirm_password" name="confirm_password"
+               autocomplete="new-password">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Avatar Icon</h2>
+    <p class="field-hint" style="margin-bottom:.75rem">Pick an icon, or leave unselected to show your initials.</p>
+
+    <div class="avatar-picker">
+      <input type="radio" class="avatar-option avatar-option-none" id="avatar-none"
+             name="avatar" value=""
+             {% if not form.avatar %}checked{% endif %}>
+      <label for="avatar-none" title="Use initials">
+        {{ current_user.display_name[:1].upper() }}
+      </label>
+
+      {% for icon in avatar_options %}
+      <input type="radio" class="avatar-option" id="avatar-{{ loop.index }}"
+             name="avatar" value="{{ icon }}"
+             {% if form.avatar == icon %}checked{% endif %}>
+      <label for="avatar-{{ loop.index }}" title="{{ icon }}">{{ icon }}</label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <button type="submit">Save Changes</button>
+
+</form>
+{% endblock %}

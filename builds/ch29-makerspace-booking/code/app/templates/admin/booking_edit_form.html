@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Booking #{{ booking.id }} — Admin{% endblock %}
+
+{% block style %}
+main { max-width: 1080px; }
+{% endblock %}
+
+{% block content %}
+<h1>Edit Booking <span style="color:var(--text-3);font-weight:400">#{{ booking.id }}</span></h1>
+
+<div class="info-box">
+  <strong>Member:</strong> {{ booking.user.display_name }} ({{ booking.user.email }})<br>
+  <strong>Resource:</strong> {{ booking.resource.name }}<br>
+  <strong>Status:</strong> {{ booking.status.value.replace('_', ' ').title() }}
+</div>
+
+<div class="admin-notice">
+  <strong>Admin edit</strong>
+  Availability windows, edit limits, and time-proximity constraints are not enforced here.
+</div>
+
+<div class="form-section">
+  <h2>Schedule</h2>
+  <form method="post" action="{{ url_for('admin.booking_edit', id=booking.id) }}">
+    {% if is_book %}
+    <div class="row-2">
+      <div>
+        <label for="checkout_date">Checkout date</label>
+        <input type="date" id="checkout_date" name="checkout_date"
+               value="{{ form.get('checkout_date', '') }}" required>
+      </div>
+      <div>
+        <label for="return_date">Return date</label>
+        <input type="date" id="return_date" name="return_date"
+               value="{{ form.get('return_date', '') }}" required>
+      </div>
+    </div>
+    {% else %}
+    <div class="row-2">
+      <div>
+        <label for="start_datetime">Start</label>
+        <input type="datetime-local" id="start_datetime" name="start_datetime"
+               value="{{ form.get('start_datetime', '') }}" required>
+      </div>
+      <div>
+        <label for="end_datetime">End</label>
+        <input type="datetime-local" id="end_datetime" name="end_datetime"
+               value="{{ form.get('end_datetime', '') }}" required>
+      </div>
+    </div>
+    {% endif %}
+
+    <label for="comment" style="margin-top:1rem">Comment <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+    <textarea id="comment" name="comment" rows="3">{{ form.get('comment', '') }}</textarea>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Save changes</button>
+      <a href="{{ url_for('admin.bookings_list') }}" style="font-size:.875rem;color:var(--text-3)">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Members — Admin{% endblock %}
+
+{% block style %}
+main { max-width: 1200px; }
+.col-name   { min-width: 11rem; }
+.col-email  { min-width: 14rem; font-size: .875rem; }
+.col-status { width: 8rem; }
+.col-reg    { width: 10rem; font-size: .82rem; color: var(--text-2); white-space: nowrap; }
+.col-approv { width: 10rem; font-size: .82rem; color: var(--text-2); white-space: nowrap; }
+.col-actions { width: 14rem; }
+{% endblock %}
+
+{% block content %}
+<h1>Members</h1>
+
+<form class="filter-bar" method="get" action="{{ url_for('admin.members_list') }}">
+  <div>
+    <label for="f-status">Status</label>
+    <select id="f-status" name="status">
+      <option value="">All</option>
+      {% for s in [UserStatus.pending, UserStatus.active, UserStatus.frozen, UserStatus.rejected] %}
+      <option value="{{ s.value }}" {% if status_f == s.value %}selected{% endif %}>{{ s.value.title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn-filter" type="submit">Filter</button>
+  {% if status_f %}
+  <a class="btn-clear" href="{{ url_for('admin.members_list') }}">Clear</a>
+  {% endif %}
+</form>
+
+{% if pagination.items %}
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-name">Name</th>
+        <th class="col-email">Email</th>
+        <th class="col-status">Status</th>
+        <th class="col-reg">Registered</th>
+        <th class="col-approv">Approved</th>
+        <th class="col-actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in pagination.items %}
+      <tr>
+        <td class="col-name">
+          {{ member.display_name }}
+          {% if member.is_admin %}<span class="tag-admin">(admin)</span>{% endif %}
+        </td>
+        <td class="col-email">{{ member.email }}</td>
+        <td class="col-status">
+          {% if member.status == UserStatus.active %}
+            <span class="status-badge badge-active">Active</span>
+          {% elif member.status == UserStatus.pending %}
+            <span class="status-badge badge-pending">Pending</span>
+          {% elif member.status == UserStatus.frozen %}
+            <span class="status-badge badge-frozen">Frozen</span>
+          {% else %}
+            <span class="status-badge badge-rejected">Rejected</span>
+          {% endif %}
+        </td>
+        <td class="col-reg">{{ member.created_at.strftime('%Y-%m-%d') }}</td>
+        <td class="col-approv">{{ member.approved_at.strftime('%Y-%m-%d') if member.approved_at else '—' }}</td>
+        <td class="col-actions">
+          <div class="action-forms">
+            <a class="action-link" href="{{ url_for('admin.member_edit', id=member.id) }}">Edit</a>
+            {% if not member.is_admin %}
+              {% if member.status == UserStatus.pending %}
+                <form method="post" action="{{ url_for('admin.member_approve', id=member.id) }}" style="display:inline">
+                  <button class="btn btn-primary btn-sm" type="submit">Approve</button>
+                </form>
+                <a class="btn-danger btn-sm" href="{{ url_for('admin.member_reject', id=member.id) }}">Reject</a>
+              {% elif member.status == UserStatus.active %}
+                <form method="post" action="{{ url_for('admin.member_freeze', id=member.id) }}" style="display:inline"
+                      onsubmit="return confirm('Freeze {{ member.display_name }}?')">
+                  <button class="btn-cancel btn-sm" type="submit">Freeze</button>
+                </form>
+              {% elif member.status == UserStatus.frozen %}
+                <form method="post" action="{{ url_for('admin.member_unfreeze', id=member.id) }}" style="display:inline">
+                  <button class="btn btn-primary btn-sm" type="submit">Unfreeze</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  {% if pagination.has_prev %}
+  <a href="{{ url_for('admin.members_list', page=pagination.prev_num, status=status_f) }}">← Prev</a>
+  {% endif %}
+  <span class="current-page">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+  {% if pagination.has_next %}
+  <a href="{{ url_for('admin.members_list', page=pagination.next_num, status=status_f) }}">Next →</a>
+  {% endif %}
+</div>
+
+{% else %}
+<p class="empty">No members found{% if status_f %} with status "{{ status_f }}"{% endif %}.</p>
+{% endif %}
+{% endblock %}

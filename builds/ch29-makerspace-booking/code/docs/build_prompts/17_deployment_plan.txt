@@ -1,0 +1,19 @@
+This application has all the basic features I wanted for V1. The code is currently in a local Git repository on my development machine (it is not on GitHub yet). 
+
+I want to deploy it to the Internet so people at my makerspace can use it from any device, not just my computer. 
+
+How should I do this? Write a detailed plan. Ask me any questions that are reasonable for this kind of deployment. 
+
+Assume I can deploy on a low-cost VPS like Hetzner, and this will be the only application on the server. 
+
+I have purchased the domain makerbooking.com and it's hosted on Cloudflare.
+
+I have never deployed a web application before, so please give me simple step-by-step instructions. In particular, I need: instructions for creating a new GitHub repository and pushing my local repository to it; a way to automatically re-deploy the application to the VPS every time I push new code to GitHub, without needing to log in to the server manually; a safe way to roll back to the previous version if an update breaks something; and a version number visible in the admin footer so I always know which version is running. 
+
+Please automate as much of both the first-time setup and subsequent deployments as possible, to reduce manual steps and the chance of human error.
+
+Ensure that no credentials are copied to production or exposed on Github. 
+
+I want the Github repository to be private.
+
+Ask any questions needed to plan this deployment (and future updates) properly and according to best practices. 

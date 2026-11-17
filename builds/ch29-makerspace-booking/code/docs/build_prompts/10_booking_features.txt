@@ -1,0 +1,19 @@
+5.4b Prompt 2:
+
+Read memory.md for current project state.
+
+Task: implement the booking features.
+
+1. Resource list page: GET / (redirects to login if unauthenticated). Shows all non-archived resources with category labels and a "Book" button for each. Allow filtering by category.
+
+2. Booking form: GET /resources/<id>/book. Shows the resource details. For category == 'book', show date pickers (checkout date, return date). For all other categories, show datetime pickers (start_time, end_time). Validates that the selected times fall within the resource's availability window for the day of week: weekday window on weekdays, weekend window on weekends. If the resource has no weekend window (null), reject any weekend booking for that resource.
+
+3. Create booking: POST /resources/<id>/book. Runs the conflict detection query. If a conflict exists, shows an error message with the conflicting slot. If no conflict, creates the booking and redirects to the member's booking list.
+
+4. Member booking list: GET /my-bookings. Shows the authenticated member's upcoming and past bookings. Each upcoming booking shows a "Cancel" button.
+
+5. Cancel booking: POST /bookings/<id>/cancel. Cancels if the booking start_time is more than one hour in the future. Returns an error if the cutoff has passed. Members can only cancel their own bookings.
+
+The conflict detection query is: Booking.query.filter(resource_id == resource_id, start_time < new_end, end_time new_start).first()
+
+Generate routes in app/routes/bookings.py and templates in app/templates/bookings/.

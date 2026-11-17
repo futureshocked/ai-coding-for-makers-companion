@@ -1,0 +1,17 @@
+Read memory.md for current project state.
+Read spec.md for reference.
+
+Task 1: implement authentication.
+
+I need:
+
+1. A User loader for Flask-Login
+2. Registration route and template (email + password, sets role to 'user' by default)
+3. Login route and template
+4. Logout route
+5. A protected route that redirects to login if the member is not authenticated
+6. Password reset scaffold (no email sending yet): 
+
+For password hashing: use werkzeug.security. No email confirmation in this version — registration immediately creates the account, and admin will then approve/reject.
+
+Use minimal but elegant HTML — functional, not polished.

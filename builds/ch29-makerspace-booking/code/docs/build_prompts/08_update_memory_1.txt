@@ -1,0 +1,3 @@
+Task 4:
+
+Update memory.md to reflect what was completed in this session: authentication routes, resource management CRUD, seed command, files created, current working state, and that the next task is A5.4b (booking creation with conflict detection).

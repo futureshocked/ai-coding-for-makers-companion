@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Register Your Makerspace — MakerBooking{% endblock %}
+
+{% block style %}
+main { max-width: 580px; }
+{% endblock %}
+
+{% block content %}
+<h1>Register your makerspace</h1>
+<p style="color:var(--text-2);font-size:.9rem;margin-bottom:1.5rem">
+  Your makerspace will be reviewed before going live. You'll be notified by email once approved.
+</p>
+
+<form method="post">
+
+  <div class="form-section">
+    <h2>Organisation</h2>
+
+    <label for="org_name">Organisation name</label>
+    <input type="text" id="org_name" name="org_name"
+           value="{{ form.get('org_name', '') }}" required autofocus>
+
+    <label for="subdomain">Subdomain</label>
+    <input type="text" id="subdomain" name="subdomain"
+           value="{{ form.get('subdomain', '') }}"
+           placeholder="e.g. acme" pattern="[a-z][a-z0-9\-]{1,30}[a-z0-9]" required>
+    <span class="field-hint">3–32 lowercase letters, digits, or hyphens. Must start and end with a letter or digit.</span>
+  </div>
+
+  <div class="form-section">
+    <h2>Admin account</h2>
+
+    <label for="admin_email">Admin email</label>
+    <input type="email" id="admin_email" name="admin_email"
+           value="{{ form.get('admin_email', '') }}" required autocomplete="email">
+
+    <label for="admin_display_name">Admin display name</label>
+    <input type="text" id="admin_display_name" name="admin_display_name"
+           value="{{ form.get('admin_display_name', '') }}" required>
+
+    <div class="row-2">
+      <div>
+        <label for="admin_password">Password</label>
+        <input type="password" id="admin_password" name="admin_password"
+               minlength="10" required autocomplete="new-password">
+        <span class="field-hint">Min 10 characters</span>
+      </div>
+      <div>
+        <label for="admin_password2">Confirm password</label>
+        <input type="password" id="admin_password2" name="admin_password2"
+               minlength="10" required autocomplete="new-password">
+      </div>
+    </div>
+  </div>
+
+  <button type="submit">Submit application</button>
+</form>
+
+<div class="links">
+  <a href="/">← Back to home</a>
+</div>
+{% endblock %}

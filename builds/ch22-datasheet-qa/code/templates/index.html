@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datasheet Q&A</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { color: #333; }
+        .section { margin-bottom: 2rem; padding: 1.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .section h2 { margin-top: 0; color: #333; }
+        .source-panel { margin-top: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 6px; }
+        .source-panel h3 { margin: 0 0 0.75rem; font-size: 1rem; color: #475569; }
+        .source-item { margin-bottom: 0.75rem; padding: 0.5rem; background: #fff; border-radius: 4px; font-size: 0.85rem; }
+        .source-item .source-meta { font-weight: 600; color: #0066cc; margin-bottom: 0.25rem; }
+        .source-item .source-heading { font-size: 0.8rem; color: #64748b; font-style: italic; margin-bottom: 0.25rem; }
+        .source-item .source-text { color: #64748b; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow-y: auto; }
+        .input-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .input-group input { flex: 1; font-size: 1rem; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+        .input-group button { padding: 0.5rem 1.5rem; font-size: 1rem; cursor: pointer; background: #0066cc; color: #fff; border: none; border-radius: 4px; }
+        .input-group button:hover:not(:disabled) { background: #0055aa; }
+        .input-group button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .question-wrapper { flex: 1; display: flex; flex-direction: column; }
+        #question { font-size: 1rem; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 40px; line-height: 1.5; }
+        #char-counter { font-size: 0.85rem; color: #718096; text-align: right; margin-top: 0.2rem; }
+        #response { 
+            margin-top: 1rem; 
+            padding: 1.5rem; 
+            background: #f9fafb; 
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 2rem;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        #stream-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #rendered-markdown { line-height: 1.7; }
+        #rendered-markdown p { margin: 0.7em 0; }
+        #rendered-markdown h1, #rendered-markdown h2, #rendered-markdown h3 { margin: 1em 0 0.5em; font-weight: 600; }
+        #rendered-markdown h1:first-child, #rendered-markdown h2:first-child, #rendered-markdown h3:first-child { margin-top: 0; }
+        #rendered-markdown pre { 
+            background: #1e293b; 
+            color: #e2e8f0;
+            padding: 1rem; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            margin: 0.7em 0;
+        }
+        #rendered-markdown code { 
+            background: #e2e8f0; 
+            color: #1e293b;
+            padding: 0.15em 0.4em; 
+            border-radius: 3px; 
+            font-size: 0.88em;
+            font-family: 'Fira Code', 'Consolas', monospace;
+        }
+        #rendered-markdown pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: 0.9em;
+        }
+        #rendered-markdown ul, #rendered-markdown ol { margin: 0.5em 0; padding-left: 1.5em; }
+        #rendered-markdown li { margin: 0.2em 0; }
+        #rendered-markdown blockquote {
+            border-left: 3px solid #94a3b8;
+            margin: 0.7em 0;
+            padding-left: 1em;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 0.5em 0.5em 0.5em 1em;
+            border-radius: 0 4px 4px 0;
+        }
+        #rendered-markdown table {
+            border-collapse: collapse;
+            margin: 0.7em 0;
+            width: 100%;
+        }
+        #rendered-markdown th, #rendered-markdown td {
+            border: 1px solid #d1d5db;
+            padding: 0.5em 0.75em;
+            text-align: left;
+        }
+        #rendered-markdown th {
+            background: #e2e8f0;
+            font-weight: 600;
+        }
+        #rendered-markdown tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        #rendered-markdown strong { font-weight: 600; }
+        #rendered-markdown em { font-style: italic; }
+        #cursor::after {
+            content: 'Searching...';
+            animation: blink 1s step-start infinite;
+            color: #0066cc;
+            margin-left: 0.25em;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        /* Upload section styles */
+        #drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 1rem;
+        }
+        #drop-zone:hover, #drop-zone.dragover {
+            border-color: #0066cc;
+            background: #e8f0fe;
+        }
+        #drop-zone p { margin: 0.5rem 0; color: #666; }
+        #upload-status {
+            margin-top: 0.75rem;
+        }
+        #upload-status-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #upload-status-list li {
+            padding: 0.4rem 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            background: #f1f5f9;
+            color: #334155;
+        }
+        #upload-status-list li:last-child {
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 600;
+        }
+        #upload-status.error #upload-status-list li {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        #selected-file {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            display: none;
+        }
+        #selected-file span { font-weight: 600; }
+        /* Mode toggle switch styles */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .mode-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+        }
+        .mode-label.active {
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .slider-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background: #cbd5e1;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .slider-switch.active {
+            background: #0066cc;
+        }
+        .slider-switch .slider-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 11px;
+            transition: left 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .slider-switch.active .slider-knob {
+            left: 27px;
+        }
+        /* Model selector styles */
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .model-selector label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        .model-selector select {
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .model-selector .model-hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-left: auto;
+        }
+        /* Cost panel styles */
+        .cost-panel {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: #fefce8;
+            border: 1px solid #fde047;
+            border-radius: 6px;
+            display: none;
+        }
+        .cost-panel h3 {
+            margin: 0 0 0.5rem;
+            font-size: 0.9rem;
+            color: #854d0e;
+        }
+        .cost-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #713f12;
+        }
+        .cost-details .cost-item {
+            display: flex;
+            gap: 0.25rem;
+        }
+        .cost-details .cost-label {
+            color: #a16207;
+        }
+        .cost-details .cost-value {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <h1>Datasheet Q&A</h1>
+
+    <!-- Upload Section -->
+    <div class="section">
+        <h2>Upload Datasheet</h2>
+        <div id="drop-zone">
+            <p>Drag and drop a PDF file here, or click to select</p>
+            <input type="file" id="file-input" accept=".pdf" style="display: none;" />
+        </div>
+        <div id="selected-file">Selected: <span id="file-name"></span></div>
+        <div class="input-group">
+            <button id="upload-btn" disabled>Upload</button>
+        </div>
+        <div id="upload-status"><ul id="upload-status-list"></ul></div>
+    </div>
+
+    <!-- Question Section -->
+    <div class="section">
+        <h2>Ask a Question</h2>
+        <div class="mode-toggle">
+            <span id="rag-label" class="mode-label active">Datasheet Search</span>
+            <div id="mode-slider" class="slider-switch" role="switch" aria-checked="false" tabindex="0">
+                <div class="slider-knob"></div>
+            </div>
+            <span id="direct-label" class="mode-label">Technical Advisor</span>
+        </div>
+        <div class="model-selector">
+            <label for="model-select">Model:</label>
+            <select id="model-select">
+                <option value="sonnet">Sonnet 4.6 (balanced)</option>
+                <option value="haiku">Haiku 4.5 (fast, cheap)</option>
+            </select>
+            <span id="model-hint" class="model-hint"></span>
+        </div>
+        <div id="filter-container" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <select id="document-filter" style="font-size: 1rem; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; min-width: 180px;">
+                <option value="">All documents</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <div class="question-wrapper">
+                <textarea id="question" rows="3" placeholder="Ask a question about the datasheet..."></textarea>
+                <span id="char-counter">0/5000</span>
+            </div>
+            <button id="send-btn">Send</button>
+        </div>
+        <div id="response"></div>
+        <div id="sources-panel" class="source-panel" style="display: none;">
+            <h3>Source Chunks</h3>
+            <div id="sources-list"></div>
+        </div>
+        <div id="cost-panel" class="cost-panel">
+            <h3>Query Cost</h3>
+            <div class="cost-details" id="cost-details"></div>
+        </div>
+    </div>
+
+    <script>
+        // ---- Upload Logic ----
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        const selectedFile = document.getElementById('selected-file');
+        const fileNameSpan = document.getElementById('file-name');
+        const uploadStatus = document.getElementById('upload-status');
+        const uploadStatusList = document.getElementById('upload-status-list');
+
+        let selectedFileObj = null; // File object
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFileSelect(fileInput.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            // Only accept PDF
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                showStatus('error', ['Only PDF files are accepted.']);
+                return;
+            }
+            // Max 50MB client-side check
+            if (file.size > 50 * 1024 * 1024) {
+                showStatus('error', ['File size exceeds 50 MB limit.']);
+                return;
+            }
+            selectedFileObj = file;
+            fileNameSpan.textContent = file.name + ' (' + formatSize(file.size) + ')';
+            selectedFile.style.display = 'block';
+            uploadBtn.disabled = false;
+            // Clear previous status
+            uploadStatus.className = '';
+            uploadStatusList.innerHTML = '';
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFileObj) return;
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            uploadStatus.className = '';
+            uploadStatusList.innerHTML = '';
+
+            // Show initial progress
+            addStatusItem('Uploading file...');
+
+            const formData = new FormData();
+            formData.append('file', selectedFileObj);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                console.log('Upload response status:', response.status);
+                const data = await response.json();
+                console.log('Upload response data:', data);
+
+                if (data.status === 'success') {
+                    // Append server progress messages
+                    if (data.messages && Array.isArray(data.messages)) {
+                        data.messages.forEach(function(msg) {
+                            addStatusItem(msg);
+                        });
+                    }
+                    uploadStatus.className = 'success';
+                    // Refresh documents and auto-select uploaded file
+                    await refreshAndSelect(data.filename);
+                } else {
+                    showStatus('error', [data.message || 'Upload failed.']);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('error', ['Upload failed: ' + error.message]);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload';
+            }
+        });
+
+        async function refreshAndSelect(uploadedFilename) {
+            try {
+                var resp = await fetch('/api/documents');
+                var data = await resp.json();
+                var select = document.getElementById('document-filter');
+                select.innerHTML = '';
+
+                // Add "All documents" option
+                var allOpt = document.createElement('option');
+                allOpt.value = '';
+                allOpt.textContent = 'All documents';
+                select.appendChild(allOpt);
+
+                var matched = false;
+                var expectedSource = normalizeSource(uploadedFilename);
+
+                if (data.documents && data.documents.length > 0) {
+                    data.documents.forEach(function(doc) {
+                        var opt = document.createElement('option');
+                        opt.value = doc.source;
+                        opt.textContent = doc.source + ' (' + doc.pages.length + ' pages)';
+                        select.appendChild(opt);
+                        if (doc.source === expectedSource) {
+                            opt.selected = true;
+                            matched = true;
+                        }
+                    });
+                }
+
+                // If no match (shouldn't happen), fall back to first document
+                if (!matched && select.options.length > 1) {
+                    select.selectedIndex = 1; // First actual document
+                }
+            } catch (e) {
+                console.log('Failed to refresh documents after upload:', e);
+            }
+        }
+
+        function normalizeSource(filename) {
+            // Match the normalization in ingest.py: Path(source).stem.replace(" ", "_").lower()
+            var nameWithoutExt = filename.replace(/\.pdf$/i, '');
+            return nameWithoutExt.replace(/ /g, '_').toLowerCase();
+        }
+
+        function addStatusItem(text) {
+            const li = document.createElement('li');
+            li.textContent = text;
+            uploadStatusList.appendChild(li);
+        }
+
+        function showStatus(type, messages) {
+            console.log('showStatus called:', type, messages);
+            uploadStatus.className = type;
+            uploadStatusList.innerHTML = '';
+            messages.forEach(function(msg) {
+                addStatusItem(msg);
+            });
+        }
+
+        // ---- Document Filter ----
+        (async function loadDocuments() {
+            try {
+                var resp = await fetch('/api/documents');
+                var data = await resp.json();
+                var select = document.getElementById('document-filter');
+                if (data.documents && data.documents.length > 0) {
+                    data.documents.forEach(function(doc) {
+                        var opt = document.createElement('option');
+                        opt.value = doc.source;
+                        opt.textContent = doc.source + ' (' + doc.pages.length + ' pages)';
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.log('Failed to load documents:', e);
+            }
+        })();
+
+        function escapeHtml(text) {
+            var amp = String.fromCharCode(38) + 'amp;';
+            var lt = String.fromCharCode(60) + 'lt;';
+            var gt = String.fromCharCode(62) + 'gt;';
+            return text.replace(/&/g, amp).replace(/</g, lt).replace(/>/g, gt);
+        }
+
+        // ---- Mode Toggle ----
+        let isDirectMode = false;
+        const modeSlider = document.getElementById('mode-slider');
+        const ragLabel = document.getElementById('rag-label');
+        const directLabel = document.getElementById('direct-label');
+        const filterContainer = document.getElementById('filter-container');
+        const questionInput = document.getElementById('question');
+
+        function setMode(direct) {
+            isDirectMode = direct;
+            modeSlider.classList.toggle('active', direct);
+            modeSlider.setAttribute('aria-checked', direct);
+            ragLabel.classList.toggle('active', !direct);
+            directLabel.classList.toggle('active', direct);
+            filterContainer.style.display = direct ? 'none' : 'flex';
+            questionInput.placeholder = direct ? 'Ask a technical question...' : 'Ask a question about the datasheet...';
+        }
+
+        modeSlider.addEventListener('click', () => setMode(!isDirectMode));
+        modeSlider.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setMode(!isDirectMode);
+            }
+        });
+
+        // ---- Model Selector ----
+        const modelSelect = document.getElementById('model-select');
+        const modelHint = document.getElementById('model-hint');
+        let serverModelKey = 'sonnet'; // default, will be updated on load
+
+        async function loadModelConfig() {
+            try {
+                var resp = await fetch('/api/config');
+                var data = await resp.json();
+                serverModelKey = data.model_key;
+                modelSelect.value = data.model_key;
+                updateModelHint(data.model_key);
+            } catch (e) {
+                console.log('Failed to load model config:', e);
+            }
+        }
+
+        function updateModelHint(key) {
+            var hints = {
+                'sonnet': '$3/MTok in, $15/MTok out',
+                'haiku': '$1/MTok in, $5/MTok out',
+            };
+            modelHint.textContent = hints[key] || '';
+        }
+
+        modelSelect.addEventListener('change', async () => {
+            var selectedKey = modelSelect.value;
+            try {
+                var resp = await fetch('/api/config/model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_key: selectedKey }),
+                });
+                var data = await resp.json();
+                if (data.status === 'success') {
+                    serverModelKey = selectedKey;
+                    updateModelHint(selectedKey);
+                } else {
+                    // Revert on error
+                    modelSelect.value = serverModelKey;
+                    alert(data.message || 'Failed to switch model.');
+                }
+            } catch (e) {
+                console.error('Model switch error:', e);
+                modelSelect.value = serverModelKey;
+                alert('Failed to switch model.');
+            }
+        });
+
+        // Load model config on page load
+        loadModelConfig();
+
+        // ---- Question Logic ----
+        const sendBtn = document.getElementById('send-btn');
+        const responseDiv = document.getElementById('response');
+        const sourcesPanel = document.getElementById('sources-panel');
+        const sourcesList = document.getElementById('sources-list');
+        const costPanel = document.getElementById('cost-panel');
+        const costDetails = document.getElementById('cost-details');
+
+        // Ctrl+Enter to submit, plain Enter for newline
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !sendBtn.disabled) {
+                e.preventDefault();
+                submitQuery();
+            }
+        });
+
+        sendBtn.addEventListener('click', submitQuery);
+
+        // Maximum question length
+        const MAX_QUESTION_LENGTH = 5000;
+
+        // Character counter update
+        const charCounter = document.getElementById('char-counter');
+        questionInput.addEventListener('input', () => {
+            const len = questionInput.value.length;
+            charCounter.textContent = len + '/' + MAX_QUESTION_LENGTH;
+            charCounter.style.color = len > MAX_QUESTION_LENGTH ? '#dc2626' : '#718096';
+        });
+
+        async function submitQuery() {
+            var question = questionInput.value.trim();
+            if (!question) return;
+
+            // Client-side length validation
+            if (question.length > MAX_QUESTION_LENGTH) {
+                responseDiv.innerHTML = '<div style="color:#dc2626;">Error: Question exceeds maximum length of ' + MAX_QUESTION_LENGTH + ' characters.</div>';
+                return;
+            }
+
+            sendBtn.disabled = true;
+            responseDiv.innerHTML = '<div id="stream-text"><span id="cursor"></span></div>';
+            sourcesPanel.style.display = 'none';
+            sourcesList.innerHTML = '';
+            costPanel.style.display = 'none';
+            costDetails.innerHTML = '';
+            var fullText = '';
+
+            try {
+                var formData = new URLSearchParams();
+                formData.append('text', question);
+                formData.append('mode', isDirectMode ? 'direct' : 'rag');
+
+                if (!isDirectMode) {
+                    var docFilter = document.getElementById('document-filter').value;
+                    if (docFilter) {
+                        formData.append('document_filter', docFilter);
+                    }
+                }
+
+                var response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+
+                var reader = response.body.getReader();
+                var decoder = new TextDecoder('utf-8');
+                var buffer = '';
+
+                while (true) {
+                    var result = await reader.read();
+                    var done = result.done;
+                    var value = result.value;
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Parse SSE events from buffer
+                    var lines = buffer.split('\n');
+                    buffer = lines.pop() || ''; // keep incomplete line in buffer
+
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i];
+
+                        if (line.startsWith('event:')) {
+                            var eventType = line.slice(6).trim();
+                            // next line should be data
+                            if (i + 1 < lines.length && lines[i + 1].startsWith('data:')) {
+                                var dataLine = lines[i + 1].slice(5);
+                                i++; // skip data line
+
+                                // Remove only trailing \r from SSE line endings, preserve intentional spaces
+                                dataLine = dataLine.replace(/\r$/, '');
+
+                                if (eventType === 'sources') {
+                                      var sources = JSON.parse(dataLine);
+                                      if (sources.length > 0) {
+                                          sources.forEach(function(src) {
+                                              var div = document.createElement('div');
+                                              div.className = 'source-item';
+                                              var headingHtml = src.heading ? '<div class="source-heading">' + escapeHtml(src.heading) + '</div>' : '';
+                                              div.innerHTML = 
+                                                  '<div class="source-meta">[source: ' + src.source + ', page ' + src.page + ']</div>' +
+                                                  headingHtml +
+                                                  '<div class="source-text">' + escapeHtml(src.text) + '</div>';
+                                              sourcesList.appendChild(div);
+                                          });
+                                      }
+                              } else if (eventType === 'text') {
+                                  fullText += dataLine;
+                                  var escaped = escapeHtml(fullText);
+                                  var streamTextDiv = responseDiv.querySelector('#stream-text');
+                                  streamTextDiv.innerHTML = escaped + '<span id="cursor"></span>';
+                              } else if (eventType === 'usage') {
+                                  var usageData = JSON.parse(dataLine);
+                                  showCostPanel(usageData);
+                              } else if (eventType === 'error') {
+                                  var errorData = JSON.parse(dataLine);
+                                  throw new Error(errorData.message || 'An error occurred');
+                              }
+                             }
+                        }
+                    }
+                }
+
+                // Render final answer as markdown
+                responseDiv.innerHTML = '<div id="rendered-markdown">' + marked.parse(fullText) + '</div>';
+
+                // Show source panel (only in RAG mode)
+                if (!isDirectMode && sourcesList.children.length > 0) {
+                    sourcesPanel.style.display = 'block';
+                }
+
+            } catch (error) {
+                responseDiv.innerHTML = '<div style="color:#dc2626;">Error: ' + error.message + '</div>';
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function showCostPanel(usageData) {
+            costDetails.innerHTML = 
+                '<div class="cost-item"><span class="cost-label">Model:</span> <span class="cost-value">' + usageData.model + '</span></div>' +
+                '<div class="cost-item"><span class="cost-label">Input tokens:</span> <span class="cost-value">' + usageData.input_tokens + '</span></div>' +
+                '<div class="cost-item"><span class="cost-label">Output tokens:</span> <span class="cost-value">' + usageData.output_tokens + '</span></div>' +
+                '<div class="cost-item"><span class="cost-label">Est. cost:</span> <span class="cost-value">$' + usageData.cost_usd.toFixed(6) + '</span></div>';
+            costPanel.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+1. When visiting https://app.makerbooking.com/ I see "Not Found - The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again." Should show login page for the super admin.
+
+2. When visiting https://app.makerbooking.com/super/, the table width is too narrow to accomodate the table within. Increase width to 1080.
+
+3. When visiting https://app.makerbooking.com/super/audit-log (with with /super/), the table width is too narrow to accomodate the table within. Increase width to 1080.
+
+4. Add a new stats page for the super admin that shows statistics per tenant: number of admins, members, resources, future bookings and completed bookings. Include a filter for today, last seven days, last month, and since the begining (of the app).
+
+4a. The new stats page is showing correct statistics for "Today". For some reason, it shows "0" in all values. Values like those for the admins, members, and resource, with the current data in the production database, are definately not zero. For Today, active admins should be counted. Active member counts, (and a new suspended column) are also non-zero. Similar for resources. For bookings, include any bookings that are due to start in the future. For completed bookings, include any bookings that completed in the past. Follow similar rules for the other time ranges.
+
+5. There is a URL attached to the cogwheel and tenant name in the top-left corner of all pages. This leads to the root of the tenant site, such as https://default.makerbooking.com. There is no route there, so the user sees a "Not Found". Fix this so that if the user is logged in, the root route derirects to the /home route. If the user is not logged in, it redirects to the login page /auth/login.
+
+6. Let's modernise the UI. As the functionality that I want to implement is there, I want to make the site more interesting to look at. This includes home pages (/ for super admin and tenants), all member pages, admin pages, and super admin pages. Go ahead to use modern design best practices and create a unique UI look and feel for makerbooking.com that has Maker community undertones and is great for the eye.
+
+7. The tenant admin page at /admin/booking/x/edit has a text box (that contains the form) that is too narrow, and causes part of the form to extend outside the box. Make the box wider at 1080 to ensure the form is fully enclosed.
+
+8. Show the application version number in the footer of the super administrators pages (logged in or logged out).
+
+After completing tasks 7 and 8, bump up app version to 2.0.1
+

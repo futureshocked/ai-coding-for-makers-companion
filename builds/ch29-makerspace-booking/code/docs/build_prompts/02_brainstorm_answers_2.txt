@@ -1,0 +1,34 @@
+Here's my answers (iteration 2):
+
+Members & access
+  1. Clearance expiry — Let's keep it simple for v1: clearances don't expire, but the administrator can remove a clearance from a member if needed.
+  2. Frozen accounts — Existing bookings are retained, but the administrator can cancel them manually from the admin interface. Therefore, booking must be listed in the member's admin record page.
+  3. Rejected applicants — keep the record, and include a notes field so admin can record the reasoning for the rejection.
+
+
+Booking & resources
+  4. Let's keep things simple and set the buffer gap and booking horizon at the category level. 
+  5. Book loan period — per category, and members can extend a loan if no other loan exists.
+  6. Booking modification — yes, members can edit a booking's start and end times but only within a +-1 hour window. Make this grace period configurable by the admin.
+
+
+Comments clarification
+  7. "a field for comments for each resource so the member can provide feedback.": I mean one comment per booking instance. This is a message to the admin, not like a resource review for other members to read.
+
+Operating hours
+  8. Yes, the admin can set the makerspaces operating hours, which defines the start and finish time for all bookings (except for books).
+
+Notifications
+  9. You mentioned email reminders originally, and auto-cancellation emails. What's the full set? Yes, we'll also use the transactional email capability to send out registration approval/rejection, booking confirmation, reminder N hours before start, downtime cancellation, late-return reminder. These reminders are system wide, set by the admin.
+
+Books as a category
+  10. Books can be treated as all other resources. They should be ID by the ISBN, and include their other fields. We don't need a fully fledge library system, but just enough information to make the book able to be borrowed. A member can pick a specific book as each copy will be listed as an individual resource?
+
+Concurrent bookings
+  11. Yes, one member can hold multiple overlapping bookings across different resources (workbench + oscilloscope + power supply for the same 2 hours)?
+
+Resource discovery
+  12. The browse experience allows the member to browse and filter by category + availability.
+
+ Audit & reports
+  13. Admin reports should be built-in dashboard. For example, the admin can see a report of cancellations, or extensions, or of all members that have booked a particular resource within a time range in the past or future.

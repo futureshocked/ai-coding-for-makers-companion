@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RC Low-Pass Filter Analyser</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #a0c4ff;
+    margin-bottom: 24px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 0.8rem;
+    color: #9ab;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  input[type="number"] {
+    background: #0f0f1e;
+    border: 1px solid #334;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 1.05rem;
+    padding: 8px 12px;
+    width: 140px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="number"]:focus {
+    border-color: #a0c4ff;
+  }
+
+  .fc-display {
+    background: #0f0f1e;
+    border: 1px solid #334;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1.05rem;
+    color: #ffd166;
+    white-space: nowrap;
+    align-self: flex-end;
+  }
+
+  .fc-display span {
+    font-size: 0.78rem;
+    color: #9ab;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  canvas {
+    background: #0d0d1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<h1>RC Low-Pass Filter — Bode Magnitude Plot</h1>
+
+<div class="controls">
+  <div class="field">
+    <label>Resistance R (kΩ)</label>
+    <input type="number" id="R" value="1" min="0.001" step="0.1">
+  </div>
+  <div class="field">
+    <label>Capacitance C (nF)</label>
+    <input type="number" id="C" value="159" min="0.001" step="1">
+  </div>
+  <div class="fc-display" id="fcDisplay">
+    <span>f<sub>c</sub></span>—
+  </div>
+</div>
+
+<canvas id="plot" width="700" height="350"></canvas>
+
+<script>
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Plot margins
+  const ML = 62, MR = 24, MT = 24, MB = 52;
+  const PW = W - ML - MR;
+  const PH = H - MT - MB;
+
+  const F_MIN = 1, F_MAX = 1e6;
+  const DB_MAX = 0, DB_MIN = -40;
+
+  function freqToX(f) {
+    return ML + (Math.log10(f) - Math.log10(F_MIN)) / (Math.log10(F_MAX) - Math.log10(F_MIN)) * PW;
+  }
+
+  function dbToY(db) {
+    return MT + (DB_MAX - db) / (DB_MAX - DB_MIN) * PH;
+  }
+
+  function draw(fc) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background grid
+    ctx.strokeStyle = '#1e1e3a';
+    ctx.lineWidth = 1;
+
+    // Horizontal grid lines (dB)
+    const dbTicks = [0, -10, -20, -30, -40];
+    dbTicks.forEach(db => {
+      const y = dbToY(db);
+      ctx.beginPath();
+      ctx.moveTo(ML, y);
+      ctx.lineTo(ML + PW, y);
+      ctx.stroke();
+    });
+
+    // Vertical grid lines (decade markers)
+    for (let exp = 0; exp <= 6; exp++) {
+      const f = Math.pow(10, exp);
+      const x = freqToX(f);
+      ctx.beginPath();
+      ctx.moveTo(x, MT);
+      ctx.lineTo(x, MT + PH);
+      ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#445';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(ML, MT);
+    ctx.lineTo(ML, MT + PH);
+    ctx.lineTo(ML + PW, MT + PH);
+    ctx.stroke();
+
+    // dB tick labels
+    ctx.fillStyle = '#8899aa';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    dbTicks.forEach(db => {
+      const y = dbToY(db);
+      ctx.fillText(db + ' dB', ML - 8, y);
+    });
+
+    // Frequency tick labels
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const fLabels = [1, 10, 100, 1e3, 1e4, 1e5, 1e6];
+    fLabels.forEach(f => {
+      const x = freqToX(f);
+      let label;
+      if (f >= 1e6) label = '1M';
+      else if (f >= 1e3) label = (f / 1e3) + 'k';
+      else label = f.toString();
+      ctx.fillText(label + ' Hz', x, MT + PH + 8);
+    });
+
+    // Axis labels
+    ctx.fillStyle = '#aabbcc';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('Frequency (Hz)', ML + PW / 2, H - 2);
+
+    ctx.save();
+    ctx.translate(14, MT + PH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textBaseline = 'top';
+    ctx.fillText('Magnitude (dB)', 0, 0);
+    ctx.restore();
+
+    // Bode curve
+    ctx.beginPath();
+    ctx.strokeStyle = '#a0c4ff';
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = 'round';
+
+    let first = true;
+    const steps = PW * 2;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const logF = Math.log10(F_MIN) + t * (Math.log10(F_MAX) - Math.log10(F_MIN));
+      const f = Math.pow(10, logF);
+      const db = -10 * Math.log10(1 + Math.pow(f / fc, 2));
+      const x = ML + t * PW;
+      const y = dbToY(Math.max(DB_MIN, db));
+      if (first) { ctx.moveTo(x, y); first = false; }
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Cutoff frequency vertical dashed line
+    const fcX = freqToX(fc);
+    if (fcX >= ML && fcX <= ML + PW) {
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#ffd166';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(fcX, MT);
+      ctx.lineTo(fcX, MT + PH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Dot at -3 dB point
+      const y3db = dbToY(-3.01);
+      ctx.beginPath();
+      ctx.arc(fcX, y3db, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffd166';
+      ctx.fill();
+
+      // fc label
+      ctx.fillStyle = '#ffd166';
+      ctx.font = 'bold 12px system-ui, sans-serif';
+      ctx.textBaseline = 'bottom';
+      let fcStr;
+      if (fc >= 1e6) fcStr = (fc / 1e6).toFixed(2) + ' MHz';
+      else if (fc >= 1e3) fcStr = (fc / 1e3).toFixed(2) + ' kHz';
+      else fcStr = fc.toFixed(1) + ' Hz';
+
+      // Position label left or right of line depending on space
+      const labelW = ctx.measureText('fc = ' + fcStr).width + 8;
+      let labelX = fcX + 8;
+      if (fcX + 8 + labelW > ML + PW) labelX = fcX - labelW - 4;
+
+      ctx.textAlign = 'left';
+      ctx.fillText('fc = ' + fcStr, labelX, MT + PH - 8);
+    }
+
+    // Frame border
+    ctx.strokeStyle = '#2a2a4a';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(ML, MT, PW, PH);
+  }
+
+  function update() {
+    const R_k = parseFloat(document.getElementById('R').value);
+    const C_n = parseFloat(document.getElementById('C').value);
+
+    if (isNaN(R_k) || isNaN(C_n) || R_k <= 0 || C_n <= 0) return;
+
+    const R = R_k * 1000;
+    const C = C_n * 1e-9;
+    const fc = 1 / (2 * Math.PI * R * C);
+
+    let fcStr;
+    if (fc >= 1e6) fcStr = (fc / 1e6).toFixed(2) + ' MHz';
+    else if (fc >= 1e3) fcStr = (fc / 1e3).toFixed(2) + ' kHz';
+    else fcStr = fc.toFixed(1) + ' Hz';
+
+    document.getElementById('fcDisplay').innerHTML = '<span>f<sub>c</sub></span>' + fcStr;
+
+    draw(fc);
+  }
+
+  document.getElementById('R').addEventListener('input', update);
+  document.getElementById('C').addEventListener('input', update);
+
+  update();
+</script>
+</body>
+</html>

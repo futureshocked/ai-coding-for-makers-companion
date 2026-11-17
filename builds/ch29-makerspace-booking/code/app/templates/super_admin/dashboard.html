@@ -1,0 +1,151 @@
+{% extends "super_admin/base.html" %}
+
+{% block title %}Tenant Dashboard — Super Admin{% endblock %}
+
+{% block style %}
+.tenant-table { width: 100%; border-collapse: collapse; }
+.tenant-table th, .tenant-table td { padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border); text-align: left; }
+.tenant-table th { background: var(--surface-alt); font-weight: 600; font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); font-family: 'Space Grotesk', sans-serif; }
+.action-form { display: inline; }
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem">
+  <h1 style="margin-bottom:0">Tenant Dashboard</h1>
+  <span style="font-size:.82rem;color:var(--text-3);background:var(--surface-alt);border:1px solid var(--border);padding:.25rem .75rem;border-radius:999px;">
+    {{ tenants | length }} tenant{{ 's' if tenants|length != 1 }} total
+  </span>
+</div>
+
+{% set pending   = tenants | selectattr("tenant.status.value", "equalto", "pending")   | list %}
+{% set active    = tenants | selectattr("tenant.status.value", "equalto", "active")    | list %}
+{% set suspended = tenants | selectattr("tenant.status.value", "equalto", "suspended") | list %}
+
+{% if pending %}
+<div class="section-group section-group-warning">
+  <h2 class="section-heading">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Pending approval ({{ pending | length }})
+  </h2>
+  <div class="table-wrapper">
+    <table class="tenant-table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Subdomain</th><th>Members</th><th>Created</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for row in pending %}
+      {% set t = row.tenant %}
+      <tr>
+        <td style="color:var(--text-3);font-size:.82rem">{{ t.id }}</td>
+        <td><strong>{{ t.name }}</strong></td>
+        <td style="font-size:.875rem;color:var(--text-2)">{{ t.subdomain }}</td>
+        <td>{{ row.member_count }}</td>
+        <td style="font-size:.82rem;color:var(--text-2)">{{ t.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+          <div class="action-forms">
+            <form class="action-form" method="post" action="{{ url_for('super_admin.approve_tenant', tenant_id=t.id) }}">
+              <button class="btn btn-primary btn-sm" type="submit">Approve</button>
+            </form>
+            <form class="action-form" method="post" action="{{ url_for('super_admin.reject_tenant', tenant_id=t.id) }}"
+                  onsubmit="return confirm('Reject {{ t.name }}?')">
+              <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if active %}
+<div class="section-group section-group-active">
+  <h2 class="section-heading">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    Active ({{ active | length }})
+  </h2>
+  <div class="table-wrapper">
+    <table class="tenant-table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Subdomain</th><th>Listed</th><th>Members</th><th>Created</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for row in active %}
+      {% set t = row.tenant %}
+      <tr>
+        <td style="color:var(--text-3);font-size:.82rem">{{ t.id }}</td>
+        <td><strong>{{ t.name }}</strong></td>
+        <td style="font-size:.875rem;color:var(--text-2)">{{ t.subdomain }}</td>
+        <td>
+          {% if t.is_listed %}
+            <span class="status-badge badge-active">Listed</span>
+          {% else %}
+            <span class="status-badge status-other">Unlisted</span>
+          {% endif %}
+        </td>
+        <td>{{ row.member_count }}</td>
+        <td style="font-size:.82rem;color:var(--text-2)">{{ t.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+          <div class="action-forms">
+            <form class="action-form" method="post" action="{{ url_for('super_admin.suspend_tenant', tenant_id=t.id) }}"
+                  onsubmit="return confirm('Suspend {{ t.name }}?')">
+              <button class="btn-cancel btn-sm" type="submit">Suspend</button>
+            </form>
+            <form class="action-form" method="post" action="{{ url_for('super_admin.toggle_listed', tenant_id=t.id) }}">
+              <button class="btn btn-secondary btn-sm" type="submit">{{ 'Unlist' if t.is_listed else 'List' }}</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if suspended %}
+<div class="section-group section-group-suspended">
+  <h2 class="section-heading">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+    Suspended ({{ suspended | length }})
+  </h2>
+  <div class="table-wrapper">
+    <table class="tenant-table">
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Subdomain</th><th>Members</th><th>Created</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for row in suspended %}
+      {% set t = row.tenant %}
+      <tr>
+        <td style="color:var(--text-3);font-size:.82rem">{{ t.id }}</td>
+        <td><strong>{{ t.name }}</strong></td>
+        <td style="font-size:.875rem;color:var(--text-2)">{{ t.subdomain }}</td>
+        <td>{{ row.member_count }}</td>
+        <td style="font-size:.82rem;color:var(--text-2)">{{ t.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+          <form class="action-form" method="post" action="{{ url_for('super_admin.unsuspend_tenant', tenant_id=t.id) }}">
+            <button class="btn btn-primary btn-sm" type="submit">Unsuspend</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if not tenants %}
+<div class="empty-state">
+  <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+  <p style="font-weight:600">No tenants yet.</p>
+</div>
+{% endif %}
+{% endblock %}

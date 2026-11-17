@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Member — Admin{% endblock %}
+
+{% block style %}
+main { max-width: 600px; }
+.member-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.member-meta .avatar-circle {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.member-meta .meta-text strong { font-size: 1rem; display: block; margin-bottom: .1rem; }
+.member-meta .meta-text span { font-size: .82rem; color: var(--text-2); }
+.perm-row { display: flex; align-items: center; gap: .6rem; margin-top: .6rem; }
+.perm-row input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: var(--brand); }
+.perm-row label { margin: 0; font-weight: 400; }
+.perm-note { font-size: .8rem; color: var(--text-3); margin-top: .4rem; }
+{% endblock %}
+
+{% block content %}
+<h1>Edit Member</h1>
+
+<div class="form-section">
+  <div class="member-meta">
+    <div class="avatar-circle">
+      {% if member.avatar %}{{ member.avatar }}{% else %}{{ member.display_name[:1].upper() }}{% endif %}
+    </div>
+    <div class="meta-text">
+      <strong>{{ member.display_name }}</strong>
+      <span>
+        {{ member.email }}
+        &nbsp;·&nbsp; Registered {{ member.created_at.strftime('%Y-%m-%d') }}
+        &nbsp;·&nbsp;
+        {% if member.status.value == 'active' %}<span class="status-badge badge-active">Active</span>
+        {% elif member.status.value == 'pending' %}<span class="status-badge badge-pending">Pending</span>
+        {% elif member.status.value == 'frozen' %}<span class="status-badge badge-frozen">Frozen</span>
+        {% else %}<span class="status-badge badge-rejected">Rejected</span>{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <form method="post">
+    <h2>Account Info</h2>
+
+    <label for="display_name">Display Name</label>
+    <input type="text" id="display_name" name="display_name"
+           value="{{ form.display_name }}" required>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" name="email"
+           value="{{ form.email }}" required>
+
+    <h2>Avatar Icon</h2>
+    <div class="avatar-picker">
+      <input type="radio" class="avatar-option avatar-option-none" id="avatar-none"
+             name="avatar" value=""
+             {% if not form.avatar %}checked{% endif %}>
+      <label for="avatar-none" title="Use initials">{{ member.display_name[:1].upper() }}</label>
+
+      {% for icon in avatar_options %}
+      <input type="radio" class="avatar-option" id="avatar-{{ loop.index }}"
+             name="avatar" value="{{ icon }}"
+             {% if form.avatar == icon %}checked{% endif %}>
+      <label for="avatar-{{ loop.index }}" title="{{ icon }}">{{ icon }}</label>
+      {% endfor %}
+    </div>
+
+    <h2>Permissions</h2>
+    {% if is_self %}
+    <p class="perm-note">You cannot change your own admin status.</p>
+    {% else %}
+    <div class="perm-row">
+      <input type="checkbox" id="is_admin" name="is_admin"
+             {% if member.is_admin %}checked{% endif %}>
+      <label for="is_admin">Admin — can access the admin dashboard and manage members/resources</label>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <button type="submit">Save Changes</button>
+      <a href="{{ url_for('admin.members_list') }}" style="font-size:.875rem;color:var(--text-3)">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

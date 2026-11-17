@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Sensor Visualiser</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="chartContainer">
+        <canvas id="liveChart"></canvas>
+    </div>
+
+    <div id="stats">
+        <div class="stat-card" id="stat-temperature">
+            <h3>Temperature (°C)</h3>
+            <p>Current: <span class="val-current">—</span></p>
+            <p>Min: <span class="val-min">—</span></p>
+            <p>Max: <span class="val-max">—</span></p>
+            <p>Mean: <span class="val-mean">—</span></p>
+        </div>
+        <div class="stat-card" id="stat-humidity">
+            <h3>Humidity (%)</h3>
+            <p>Current: <span class="val-current">—</span></p>
+            <p>Min: <span class="val-min">—</span></p>
+            <p>Max: <span class="val-max">—</span></p>
+            <p>Mean: <span class="val-mean">—</span></p>
+        </div>
+        <div class="stat-card" id="stat-lux">
+            <h3>Lux</h3>
+            <p>Current: <span class="val-current">—</span></p>
+            <p>Min: <span class="val-min">—</span></p>
+            <p>Max: <span class="val-max">—</span></p>
+            <p>Mean: <span class="val-mean">—</span></p>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button id="pauseBtn">Pause</button>
+
+        <label><input type="checkbox" id="toggle-temperature" checked> Temperature</label>
+        <label><input type="checkbox" id="toggle-humidity" checked> Humidity</label>
+        <label><input type="checkbox" id="toggle-lux" checked> Lux</label>
+
+        <label for="window-select">Window:</label>
+        <select id="window-select">
+            <option value="30" selected>30s</option>
+            <option value="300">5m</option>
+            <option value="0">All</option>
+        </select>
+
+        <div id="replay-controls" class="replay-controls">
+            <label for="log-select">Log:</label>
+            <select id="log-select">
+                <option value="">Loading...</option>
+            </select>
+
+            <label for="replay-speed">Speed:</label>
+            <select id="replay-speed">
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+                <option value="5">5x</option>
+                <option value="10">10x</option>
+            </select>
+
+            <button id="replay-btn">Replay</button>
+            <button id="live-btn" class="live-btn">Live</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+**Phase 4 — Versioning**
+
+Add a version number to this application. Store it in a single location so that it can be updated each time I push to the main branch. 
+
+Display the version number in the footer, visible only to logged-in administrators. Use 1.0.0 as the initial value.
+
+Advise on how versioning number should be updated (Manually? automatically (my preference) ?)

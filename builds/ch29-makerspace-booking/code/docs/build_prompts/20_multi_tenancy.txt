@@ -1,0 +1,23 @@
+Read memory.md for current project state.
+
+Implement tenant-level isolation for the booking system. The application already has member-level isolation (each user sees only their own bookings). I want to extend it so that multiple independent organisations can use the same deployment, each with their own resources and members.
+
+For example, two or more different makerspaces can have accounts and users (both administrators and members) in the same database, but these admins will not be able to see any data outside their own makerspace organisation. Each such organisation will be a "tenant". 
+
+Each tenant will have a subdomain, which is unique per tenant. The tenant user's will be attributed to the correct tenant by this subdomain. For example if "bob" uses org1.makerbooking.com, then bob belongs to "org1". If another bob uses org2.makerbooking.com, than this bob belongs to org2.  
+
+To facilitate administration of the entire application, the application will need a "super-administrator" (or "super-admin"). This super administrator will be able to lists all tenant records with name, subdomain, and member count.
+
+An organisation will be able to signup by going to a new route, /register/org. The form there will capture the organisation name and subdomain, as well as the first tenant administrator. This process should be logged in the super admin's log. 
+
+When a member wants to signup, they will have to target a specific tenant organisation so that Member signup is scoped to tenant. Update the existing `GET/POST /register` route to read the subdomain from the host header. Resolve the Tenant from the subdomain. Set `tenant_id` on the new User. If no matching Tenant exists for the subdomain, return a 404.
+
+Also, scope all resource and booking queries by tenant_id. Update the resource list route, booking creation route, and availability view to filter by tenant (use the tenant_id). Update the tenant admin routes to scope to the current admin's `tenant_id`. 
+
+Remember that the current admin user will become the tenant admin in the new version of the application. 
+
+The super-admin dashboard is the only view that crosses tenant boundaries.
+
+Once this is implemented, bump the application version to 2.0.0.
+
+Review these broad requirements for supporting tenants in the application. Consider issues that I have not thought of, and ask clarrification questions if needed.

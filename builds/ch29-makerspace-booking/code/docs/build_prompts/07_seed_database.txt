@@ -1,0 +1,15 @@
+Task 3 Add a Flask CLI command `flask seed-db` That seeds the database with test data.
+
+ Create:
+
+ - 1 admin account: admin@test.com / adminpass (role='admin')
+ - 2 regular member accounts: alice@test.com / memberpass and bob@test.com / memberpass (role='user')
+ - At least 2 resources per category (10 resources total):
+   - meeting_room: "Main Meeting Room" (capacity 8, Room 101), "Small Meeting Room" (capacity 4, Room 102)
+   - equipment: "Oscilloscope — Rigol DS1054Z" (Bench 3), "Bench Power Supply" (Bench 1), "3D Printer — Prusa MK4" (Workshop)
+   - workbench: "Workbench A" (Workshop), "Workbench B" (Workshop)
+   - hot_spot: "Hot Spot 1" (Common Area), "Hot Spot 2" (Common Area)
+   - book: "Arduino Programming Guide" (Library Shelf A), "Electronics for Makers" (Library Shelf A)
+ - All resources: available_start=09:00, available_end=18:00
+
+ The command should be safe to run multiple times: check for existing data before inserting. Add it to app/commands.py and register it in app/__init__.py.

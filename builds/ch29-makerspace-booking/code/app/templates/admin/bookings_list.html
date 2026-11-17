@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Bookings — Admin{% endblock %}
+
+{% block style %}
+main { max-width: 1300px; }
+.col-member   { min-width: 11rem; font-size: .875rem; }
+.col-resource { min-width: 10rem; font-size: .875rem; }
+.col-time     { width: 12rem; font-size: .82rem; color: var(--text-2); white-space: nowrap; }
+.col-status   { width: 11rem; }
+.col-created  { width: 9rem; font-size: .82rem; color: var(--text-2); white-space: nowrap; }
+.col-actions  { width: 10rem; }
+{% endblock %}
+
+{% block content %}
+<h1>Bookings</h1>
+
+<form class="filter-bar" method="get" action="{{ url_for('admin.bookings_list') }}">
+  <div>
+    <label for="f-status">Status</label>
+    <select id="f-status" name="status">
+      <option value="">All</option>
+      {% for s in BookingStatus %}
+      <option value="{{ s.value }}" {% if status_f == s.value %}selected{% endif %}>{{ s.value.replace('_', ' ').title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn-filter" type="submit">Filter</button>
+  {% if status_f %}
+  <a class="btn-clear" href="{{ url_for('admin.bookings_list') }}">Clear</a>
+  {% endif %}
+</form>
+
+{% if pagination.items %}
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-member">Member</th>
+        <th class="col-resource">Resource</th>
+        <th class="col-time">Start</th>
+        <th class="col-time">End</th>
+        <th class="col-status">Status</th>
+        <th class="col-created">Created</th>
+        <th class="col-actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in pagination.items %}
+      <tr>
+        <td class="col-member">{{ booking.user.display_name }}</td>
+        <td class="col-resource">{{ booking.resource.name }}</td>
+        <td class="col-time">{{ booking.starts_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td class="col-time">{{ booking.ends_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td class="col-status">
+          {% if booking.status == BookingStatus.active %}
+            <span class="status-badge badge-active">Active</span>
+          {% elif booking.status in (BookingStatus.cancelled_by_member, BookingStatus.cancelled_by_admin, BookingStatus.cancelled_downtime) %}
+            <span class="status-badge badge-cancelled">{{ booking.status.value.replace('_', ' ').title() }}</span>
+          {% elif booking.status == BookingStatus.completed %}
+            <span class="status-badge badge-completed">Completed</span>
+          {% else %}
+            <span class="status-badge badge-returned">Returned</span>
+          {% endif %}
+        </td>
+        <td class="col-created">{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
+        <td class="col-actions">
+          <div class="action-forms">
+            <a class="action-link" href="{{ url_for('admin.booking_edit', id=booking.id) }}">Edit</a>
+            {% if booking.status == BookingStatus.active %}
+            <form method="post" action="{{ url_for('admin.booking_cancel', id=booking.id) }}" style="display:inline"
+                  onsubmit="return confirm('Cancel this booking for {{ booking.user.display_name }}?')">
+              <button class="btn-cancel btn-sm" type="submit">Cancel</button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  {% if pagination.has_prev %}
+  <a href="{{ url_for('admin.bookings_list', page=pagination.prev_num, status=status_f) }}">← Prev</a>
+  {% endif %}
+  <span class="current-page">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+  {% if pagination.has_next %}
+  <a href="{{ url_for('admin.bookings_list', page=pagination.next_num, status=status_f) }}">Next →</a>
+  {% endif %}
+</div>
+
+{% else %}
+<p class="empty">No bookings found{% if status_f %} with status "{{ status_f }}"{% endif %}.</p>
+{% endif %}
+{% endblock %}

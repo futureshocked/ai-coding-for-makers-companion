@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Register — {% if g.tenant %}{{ g.tenant.name }}{% else %}MakerBooking{% endif %}{% endblock %}
+
+{% block style %}
+main {
+  max-width: 100%;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 auto;
+}
+{% endblock %}
+
+{% block content %}
+<div class="auth-split">
+
+  <div class="auth-panel">
+    <div class="panel-brand">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z"
+              fill="rgba(255,255,255,.15)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M13.5 4.5L9.5 12.5H13.5L10.5 19.5L16.5 11.5H12.5L14 4.5Z" fill="currentColor"/>
+      </svg>
+      {% if g.tenant %}{{ g.tenant.name }}{% else %}MakerBooking{% endif %}
+    </div>
+    <div class="panel-tagline">Join the<br><em>maker</em><br>community.</div>
+    <p class="panel-sub">
+      Create your account to start booking equipment, workbenches, and more at
+      {% if g.tenant %}{{ g.tenant.name }}{% else %}your local makerspace{% endif %}.
+    </p>
+    <div class="panel-dots" aria-hidden="true">
+      {% for i in range(32) %}<span></span>{% endfor %}
+    </div>
+  </div>
+
+  <div class="auth-form-panel">
+    <div class="auth-form-inner">
+      <h1>Create an account</h1>
+      <p>Fill in your details to get started.</p>
+      <form method="post">
+        <label for="display_name">Display name</label>
+        <input type="text" id="display_name" name="display_name" value="{{ display_name }}" required autofocus>
+
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" value="{{ email }}" required autocomplete="email">
+
+        <label for="password">
+          Password
+          <span style="font-weight:400;color:#94a3b8;font-size:.8rem">(min 10 characters)</span>
+        </label>
+        <input type="password" id="password" name="password" required autocomplete="new-password">
+
+        <button type="submit">Register</button>
+      </form>
+      <div class="links">
+        Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

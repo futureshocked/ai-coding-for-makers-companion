@@ -1,0 +1,8 @@
+arduino-live/venv/
+arduino-live/__pycache__/
+arduino-live/*.pyc
+arduino-live/.vscode/
+arduino-live/.idea/
+arduino-live/.DS_Store
+arduino-live/logs/
+

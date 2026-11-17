@@ -1,0 +1,4 @@
+1a. Make tables and lists wider. Allow more space for columns to reduce or eliminate truncating of text.
+1b. Modernise look and feel via a modern combination of colors and layout elements.
+1c. Add a footer with placeholders for legal pages, add copyright and mock company information.
+1d. Improve the layout of the header, with better alignement of the website name (add a logo), and the links.  

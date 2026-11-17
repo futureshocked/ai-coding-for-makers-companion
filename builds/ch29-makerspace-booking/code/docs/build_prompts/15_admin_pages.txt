@@ -1,0 +1,12 @@
+For admins:
+
+3. Implement the audit log page, where admin can see an immutable list of all admin actions.
+1. Implement the Members page, where admin can see, approve, freeze, or manage member accounts.
+For admins, the members page should have an edit link so that admin can edit member account details.
+2. For the admin dashboad, Implement the Bookings page, where admin can see, modify, and cancel member bookings. If a booking is modified by an admin, no restrictions are enforceable.
+
+
+
+
+
+All resource should have a thumbnail image. Update the model and all pages where resources (instances) appear to hold, edit and display the thumbnail. If a thumbnail is not provided, show a default placeholder image.

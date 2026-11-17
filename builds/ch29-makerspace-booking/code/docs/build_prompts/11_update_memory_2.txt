@@ -1,0 +1,3 @@
+5.4b Prompt 3:
+
+Update memory.md to reflect what was completed in this session: booking routes, availability view, per-member booking list, cancellation with cutoff, all acceptance criteria from spec.md verified. Note the next task is A5.5 (bonus features: public holiday integration and reminder emails).

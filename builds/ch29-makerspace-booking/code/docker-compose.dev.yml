@@ -1,0 +1,19 @@
+# Local development only — starts PostgreSQL so `flask run` can connect.
+# Usage: docker compose -f docker-compose.dev.yml up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: makerspace
+      POSTGRES_USER: aerolog
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./data/dev-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aerolog -d makerspace"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

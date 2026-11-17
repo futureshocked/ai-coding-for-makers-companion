@@ -1,0 +1,33 @@
+# Datasheet Q&A Tool - Dependencies
+
+# HTTP layer
+fastapi==0.115.6
+uvicorn==0.34.0
+
+# LLM
+anthropic==0.42.0
+
+# PDF parsing
+pymupdf==1.25.1
+pymupdf4llm==0.0.17
+
+# Chunking
+langchain-text-splitters==0.3.6
+
+# Embeddings
+sentence-transformers==3.3.1
+
+# Vector store
+chromadb==0.6.3
+
+# Platform directories
+platformdirs==4.3.6
+
+# File uploads
+python-multipart==0.0.20
+
+# Testing
+pytest==8.3.4
+
+# Environment variables
+python-dotenv==1.0.1

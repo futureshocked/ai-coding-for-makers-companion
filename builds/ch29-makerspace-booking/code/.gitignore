@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# User-uploaded files (keep directory structure via .gitkeep)
+app/static/uploads/resources/*
+!app/static/uploads/resources/.gitkeep
+
+# Server-side data and backups (live on the VPS, never in git)
+data/
+*.dump
+*.sql.gz

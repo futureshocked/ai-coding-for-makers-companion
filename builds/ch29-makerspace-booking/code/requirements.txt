@@ -1,0 +1,13 @@
+flask>=3.0
+flask-sqlalchemy>=3.1
+flask-migrate
+flask-login
+flask-wtf
+flask-limiter
+apscheduler
+psycopg2-binary
+resend
+gunicorn
+pytest
+factory-boy
+python-dotenv

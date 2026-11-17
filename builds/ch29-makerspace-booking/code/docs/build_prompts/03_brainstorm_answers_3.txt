@@ -1,0 +1,11 @@
+Here's my answers (iteration 3):
+
+1. Clearance removal mid-booking: Same pattern as frozen accounts (retain, admin manually cancels)
+
+2. Opening hours granularity: per-day-of-week (e.g., closed Sunday, late-open Friday)? And a way to mark holidays / one-off closures.
+  
+3. Edit-window drift: the ±1 hour edit window is relative to the current start after the most recent edit. But only two edit/change should be allowed.
+
+4. Book-related reminders: reminders for book should be in days, like "your book is due to be returned tomorrow".
+
+5. Minimum/maximum booking duration: Should be configurable by the admin per category.

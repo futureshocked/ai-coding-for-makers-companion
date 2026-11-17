@@ -1,0 +1,27 @@
+Here'S My Answers (Iteration 1):
+
+Members:
+1. For this first version, let's asume membership is homogeneous. Make a provision to allow for tiered membership in future versions of the application.
+2. Members self-register and the admin approves/rejects them.
+3. Yes, there must be per-equipment prerequisites. Equipment that involves a certain level of risk (like laser cutters, any power equioment etc) can only be booked by a member who has appropriate clearance for that equipment. The member model must capture such clearances. Member clearances can be edited only by the administrator.
+
+What they can do:
+4. Length of booking in advance is a variable set by the admin for each resource category.
+5. No quotas are needed/enforced in version 1 of the application, but keep this as a future option for improvement.
+6. Cancellation can be made up to the booking start time. All cancellations must be logged against the members account so they can be reviewed by the administrator. No penalty is needed at the moment. However, the administrator should be able to freeze a member account.
+7. No need to check-in, the booking is sufficient proof of use. Mark this for possible implementation in the future. 
+
+Admins
+8. Admins do the following: approve members. Freeze member accounts (members can't book anything while their account is frozen). Register new resources. Manage existing resources including marking them as out-of-service. Review cancellations. Handle book returns. 
+9. Members return a book, but only an admin can mark it as "returned and available" in the system.
+
+Edge cases
+10. For equipment downtime, the resource should be marked as unavailable, bookings automatically cancelled, and members notified via email. Members can rebook when the resource is available.
+11. Late returns are to be logged against the member so admins can see in reports.
+12. The gaps between equipment hire should be possible to set by the admin as it can be different depending on the equipment category.
+
+Booking model consistency
+13. For workbenches and hot spots, their booking form can have quick-select buttons like "all day", "morning", or "afternoon". But the back end does not need to give them special treatment.
+14. A borrowed book can be taken outside the makerspace. It should not matter where a book is once it's booked. 
+15. Provide a field for comments for each resource so that the member can provide feedback, including on the condition of the item or special requests.
+

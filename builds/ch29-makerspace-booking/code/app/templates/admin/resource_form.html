@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% set is_edit = resource is not none %}
+{% block title %}{% if is_edit %}Edit Resource{% else %}Add Resource{% endif %} — Admin{% endblock %}
+
+{% block style %}
+main { max-width: 680px; }
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  margin-top: .75rem;
+}
+legend {
+  font-size: .82rem;
+  color: var(--text-2);
+  padding: 0 .35rem;
+  font-weight: 500;
+  font-family: 'Space Grotesk', sans-serif;
+}
+{% endblock %}
+
+{% block content %}
+<h1>{% if is_edit %}Edit Resource{% else %}Add Resource{% endif %}</h1>
+
+<form method="post" enctype="multipart/form-data"
+      action="{% if is_edit %}{{ url_for('admin.resource_edit', id=resource.id) }}{% else %}{{ url_for('admin.resource_new') }}{% endif %}">
+
+  <div class="form-section">
+    <h2>Basic Info</h2>
+
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required
+           value="{{ form.get('name', resource.name if is_edit else '') }}">
+
+    <label for="description">Description</label>
+    <textarea id="description" name="description">{{ form.get('description', resource.description if is_edit else '') or '' }}</textarea>
+
+    <label for="location">Location</label>
+    <input type="text" id="location" name="location"
+           value="{{ form.get('location', resource.location if is_edit else '') or '' }}">
+  </div>
+
+  <div class="form-section">
+    <h2>Image</h2>
+
+    {% if is_edit and resource.thumbnail %}
+    <div style="margin-bottom:.75rem">
+      <img src="{{ url_for('static', filename='uploads/resources/' + resource.thumbnail) }}"
+           alt="{{ resource.name }}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);display:block;margin-bottom:.5rem;box-shadow:var(--shadow-sm)">
+      <label style="font-size:.875rem;color:var(--text-2);display:flex;align-items:center;gap:.4rem;margin-top:0">
+        <input type="checkbox" name="remove_thumbnail" value="1"> Remove current thumbnail
+      </label>
+    </div>
+    {% endif %}
+    <input type="file" name="thumbnail" accept="image/*" style="font-size:.9rem">
+    <span class="field-hint">Accepted: JPG, PNG, GIF, WebP · Max 4 MB</span>
+  </div>
+
+  <div class="form-section">
+    <h2>Category &amp; Availability</h2>
+
+    <label for="category">Category</label>
+    <select id="category" name="category" required>
+      <option value="" disabled {% if not (form.get('category') or (is_edit and resource.category)) %}selected{% endif %}>Select a category</option>
+      {% for cat in categories %}
+      <option value="{{ cat.value }}"
+        {% set selected_val = form.get('category') or (resource.category.value if is_edit else '') %}
+        {% if selected_val == cat.value %}selected{% endif %}>
+        {{ cat.value.replace('_', ' ').title() }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <fieldset>
+      <legend>Weekday hours</legend>
+      <div class="row-2">
+        <div>
+          <label for="weekday_start">From</label>
+          <input type="time" id="weekday_start" name="weekday_start" required
+                 value="{{ form.get('weekday_start', resource.weekday_start.strftime('%H:%M') if is_edit else '') }}">
+        </div>
+        <div>
+          <label for="weekday_end">Until</label>
+          <input type="time" id="weekday_end" name="weekday_end" required
+                 value="{{ form.get('weekday_end', resource.weekday_end.strftime('%H:%M') if is_edit else '') }}">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Weekend hours (leave blank = unavailable)</legend>
+      <div class="row-2">
+        <div>
+          <label for="weekend_start">From</label>
+          <input type="time" id="weekend_start" name="weekend_start"
+                 value="{{ form.get('weekend_start', resource.weekend_start.strftime('%H:%M') if (is_edit and resource.weekend_start) else '') }}">
+        </div>
+        <div>
+          <label for="weekend_end">Until</label>
+          <input type="time" id="weekend_end" name="weekend_end"
+                 value="{{ form.get('weekend_end', resource.weekend_end.strftime('%H:%M') if (is_edit and resource.weekend_end) else '') }}">
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <button type="submit">{% if is_edit %}Save changes{% else %}Add resource{% endif %}</button>
+</form>
+
+<div class="links" style="margin-top:1rem">
+  <a href="{{ url_for('admin.resources_list') }}">← Back to resources</a>
+</div>
+{% endblock %}

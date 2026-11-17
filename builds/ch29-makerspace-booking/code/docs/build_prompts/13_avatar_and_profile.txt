@@ -1,0 +1,1 @@
+In the header, enhance user name (that currently appears in the top right corner of the page), to include an avatar. When clicked, the avatar will show a drop-down menue with links to the user profile page and a logout link. The profile page contains a form to edit user information, such as name, email address, password, avatar icon. 

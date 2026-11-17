@@ -1,0 +1,15 @@
+5.4b Prompt 1:
+
+The Resource model currently has `available_start` and `available_end` as single time fields. Extend the model to support separate availability windows for weekdays and weekends.
+
+Requirements:
+
+1. Replace `available_start` and `available_end` with four fields: `weekday_start` (Time, default 09:00), `weekday_end` (Time, default 18:00), `weekend_start` (Time, nullable, default null), `weekend_end` (Time, nullable, default null). A null weekend window means the resource is unavailable on weekends.
+
+2. Read defaults from environment variables: DEFAULT_WEEKDAY_START, DEFAULT_WEEKDAY_END (fall back to 09:00 and 18:00 if not set).
+
+3. Update the add/edit resource admin form to include all four time fields.
+
+4. Update the seed command to set category-level defaults: meeting rooms get weekday 08:00–21:00 and weekend 09:00–15:00; all other categories use the environment defaults.
+
+5. Generate a Flask-Migrate migration for the schema change.

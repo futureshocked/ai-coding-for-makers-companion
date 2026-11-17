@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Reject Member — Admin{% endblock %}
+
+{% block style %}
+main { max-width: 540px; }
+{% endblock %}
+
+{% block content %}
+<h1>Reject Member</h1>
+
+<div class="form-section">
+  <div style="margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)">
+    <strong style="font-size:1rem;display:block">{{ member.display_name }}</strong>
+    <span style="font-size:.875rem;color:var(--text-2)">{{ member.email }}</span>
+  </div>
+
+  <form method="post">
+    <label for="note">Reason for rejection <span style="color:var(--text-3);font-weight:400">(shown to member)</span></label>
+    <textarea id="note" name="note" required placeholder="Explain why this application is being rejected…">{{ request.form.get('note', '') }}</textarea>
+
+    <div class="form-actions">
+      <button class="btn-danger" type="submit">Reject member</button>
+      <a href="{{ url_for('admin.members_list') }}" style="font-size:.875rem;color:var(--text-3)">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

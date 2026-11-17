@@ -1,0 +1,52 @@
+{% extends "super_admin/base.html" %}
+
+{% block title %}Super Admin Login{% endblock %}
+
+{% block style %}
+main {
+  max-width: 100%;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 auto;
+}
+{% endblock %}
+
+{% block content %}
+<div class="auth-split">
+
+  <div class="auth-panel" style="background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);border-bottom:2px solid #f97316;">
+    <div class="panel-brand">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z"
+              fill="rgba(255,255,255,.15)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M13.5 4.5L9.5 12.5H13.5L10.5 19.5L16.5 11.5H12.5L14 4.5Z" fill="currentColor"/>
+      </svg>
+      <span style="color:#fbbf24">⚡</span> Super Admin
+    </div>
+    <div class="panel-tagline" style="font-size:1.6rem">Platform<br><em>Management</em><br>Console.</div>
+    <p class="panel-sub">Restricted access — authorised personnel only.</p>
+    <div class="panel-dots" aria-hidden="true">
+      {% for i in range(32) %}<span></span>{% endfor %}
+    </div>
+  </div>
+
+  <div class="auth-form-panel">
+    <div class="auth-form-inner">
+      <h1>Super Admin Login</h1>
+      <p>Platform administrators only.</p>
+      <form method="post" action="{{ url_for('super_admin.login') }}">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required autofocus autocomplete="email">
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password">
+
+        <button type="submit">Log in</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

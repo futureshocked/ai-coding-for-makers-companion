@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Awaiting Approval — Makerspace Booking{% endblock %}
+
+{% block content %}
+<div style="text-align:center;padding:1.5rem 0">
+  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+       stroke-linecap="round" stroke-linejoin="round"
+       style="color:var(--brand);margin:0 auto 1.25rem;display:block" aria-hidden="true">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+  <h1>Awaiting approval</h1>
+  <p style="margin-top:.5rem">
+    Thanks for registering, <strong>{{ current_user.display_name }}</strong>.
+  </p>
+  <p style="margin-top:.75rem;color:var(--text-2);font-size:.9rem;max-width:340px;margin-left:auto;margin-right:auto;line-height:1.6">
+    Your account is pending review by an administrator. You'll receive an email
+    once your application has been approved or rejected.
+  </p>
+  <div class="links" style="margin-top:1.75rem">
+    <form method="post" action="{{ url_for('auth.logout') }}" style="display:inline">
+      <button type="submit" style="background:none;border:none;color:var(--brand);cursor:pointer;font-size:.875rem;padding:0;font-family:inherit">
+        Log out
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

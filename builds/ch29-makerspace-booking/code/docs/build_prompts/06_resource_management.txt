@@ -1,0 +1,11 @@
+Task 2:  Now implement the resource management interface for administrators.
+
+ Requirements:
+
+ - List all non-archived resources: (show name, category, location)
+ - Add resource form: (fields: name, description, location, category (dropdown of available values), available_start, available_end)
+ - Edit resource form
+ - Archive resource button
+ - All admin routes must be protected: only users with role='admin' can access them. Redirect non-admins to the home page with an error message.
+
+Use the same minimal HTML style as the auth templates.
